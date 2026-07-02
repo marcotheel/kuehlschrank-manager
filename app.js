@@ -1,6 +1,6 @@
-const FOOD_KEY = "km_html_foods_v15";
-const SHOPPING_KEY = "km_html_shopping_v15";
-const THEME_KEY = "km_html_dark_v15";
+const FOOD_KEY = "km_html_foods_v16";
+const SHOPPING_KEY = "km_html_shopping_v16";
+const THEME_KEY = "km_html_dark_v16";
 
 const demoFoods = [
   { id: "1", barcode: "4012345678901", name: "Milch", category: "Milchprodukte", amount: 1, unit: "l", minAmount: 1, expiry: todayOffset(0), location: "Kühlschrank", note: "Heute verbrauchen" },
@@ -24,13 +24,35 @@ const productDatabase = {
   "4012345678905": { name: "Eier", category: "Sonstiges", unit: "Stück", amount: 6, minAmount: 6, location: "Kühlschrank" }
 };
 
+
+const zones = {
+  A: { title: "Tür oben", hint: "Butter, Käse, Saucen" },
+  B: { title: "Tür unten", hint: "Milch, Getränke" },
+  C: { title: "Oberes Fach", hint: "Joghurt, Aufschnitt" },
+  D: { title: "Mittleres Fach", hint: "Reste, gekochte Speisen" },
+  E: { title: "Gemüsefach", hint: "Salat, Gemüse, Obst" },
+  F: { title: "Gefrierfach", hint: "Tiefkühlprodukte" }
+};
+function suggestZone(category, name = "") {
+  const text = `${category} ${name}`.toLowerCase();
+  if (text.includes("gemüse") || text.includes("obst") || text.includes("salat")) return "E";
+  if (text.includes("getränk") || text.includes("milch") || text.includes("wasser") || text.includes("saft") || text.includes("cola")) return "B";
+  if (text.includes("butter") || text.includes("käse") || text.includes("sauce")) return "A";
+  if (text.includes("fleisch") || text.includes("wurst") || text.includes("aufschnitt")) return "C";
+  if (text.includes("gefrier") || text.includes("tk") || text.includes("tiefkühl")) return "F";
+  return "D";
+}
+function zoneLabel(zone) { return zone && zones[zone] ? `Zone ${zone} – ${zones[zone].title}` : "Ohne Zone"; }
+
 let foods = load(FOOD_KEY, demoFoods);
 let shopping = load(SHOPPING_KEY, demoShopping);
 foods = foods.map(item => {
+  let updated = item;
   if (item.source === "OpenFoodFacts" && item.unit !== "Stück") {
-    return {...item, amount: 1, unit: "Stück", note: item.note || `Inhalt: ${item.amount} ${item.unit}`};
+    updated = {...updated, amount: 1, unit: "Stück", note: item.note || `Inhalt: ${item.amount} ${item.unit}`};
   }
-  return item;
+  if (!updated.zone) updated = {...updated, zone: suggestZone(updated.category, updated.name)};
+  return updated;
 });
 save();
 
@@ -129,6 +151,7 @@ function render() {
   renderList("lowList", low, "stock");
   renderShopping();
   renderFoods();
+  renderZones();
 }
 
 function renderList(id, list, mode) {
@@ -176,9 +199,11 @@ function renderShopping() {
 
 function renderFoods() {
   const search = document.getElementById("search").value.toLowerCase();
+  const selectedZone = document.getElementById("zoneFilter") ? document.getElementById("zoneFilter").value : "";
   const el = document.getElementById("foodList");
   const filtered = foods
-    .filter(item => `${item.name} ${item.category} ${item.location} ${item.barcode || ""}`.toLowerCase().includes(search))
+    .filter(item => `${item.name} ${item.category} ${item.location} ${item.barcode || ""} ${zoneLabel(item.zone)}`.toLowerCase().includes(search))
+    .filter(item => !selectedZone || item.zone === selectedZone)
     .sort((a,b) => daysUntil(a.expiry) - daysUntil(b.expiry));
 
   if (!filtered.length) {
@@ -195,6 +220,7 @@ function renderFoods() {
           <h3>${escapeHtml(item.name)}</h3>
           <p>${escapeHtml(item.brand || "")}${item.brand ? " · " : ""}${escapeHtml(item.category)} · ${escapeHtml(item.location)}</p>
           <small>${item.amount} ${escapeHtml(item.unit)} · Ablauf: ${expiryText(days)}${item.note ? " · " + escapeHtml(item.note) : ""}${item.barcode ? " · Barcode: " + escapeHtml(item.barcode) : ""}</small>
+          <span class="zone-badge">${escapeHtml(zoneLabel(item.zone))}</span>
           ${item.source === "OpenFoodFacts" ? `<span class="off-badge">OpenFoodFacts</span>` : ""}
         </div>
         <div class="food-actions">
@@ -232,6 +258,7 @@ document.getElementById("foodForm").addEventListener("submit", (event) => {
     minAmount: Number(document.getElementById("minAmount").value || 1),
     expiry: normalizeDate(document.getElementById("expiry").value),
     location: document.getElementById("location").value,
+    zone: document.getElementById("zone").value || suggestZone(document.getElementById("category").value, name),
     note: document.getElementById("note").value.trim()
   };
 
@@ -246,6 +273,7 @@ document.getElementById("foodForm").addEventListener("submit", (event) => {
   document.getElementById("barcodeField").value = "";
   document.getElementById("brand").value = "";
   document.getElementById("imageUrl").value = "";
+  document.getElementById("zone").value = "D";
   document.getElementById("scanResult").textContent = `Gespeichert: ${item.name}`;
 
   render();
@@ -451,6 +479,7 @@ async function applyBarcode(barcode) {
     document.getElementById("unit").value = offProduct.unit;
     document.getElementById("minAmount").value = offProduct.minAmount;
     document.getElementById("location").value = offProduct.location;
+    document.getElementById("zone").value = suggestZone(offProduct.category, offProduct.name);
     document.getElementById("imageUrl").value = offProduct.imageUrl || "";
     document.getElementById("note").value = offProduct.productSize ? `Inhalt: ${offProduct.productSize}` : "";
     if (!document.getElementById("expiry").value) document.getElementById("expiry").value = todayOffset(7);
@@ -553,6 +582,24 @@ function escapeHtml(value) {
   }[char]));
 }
 
+
+
+function renderZones() {
+  const map = document.getElementById("fridgeMap");
+  const list = document.getElementById("zoneList");
+  if (!map || !list) return;
+  map.innerHTML = Object.entries(zones).map(([key, zone]) => {
+    const count = foods.filter(item => item.zone === key).length;
+    return `<article class="zone-card"><div class="zone-letter">${key}</div><div><strong>${escapeHtml(zone.title)}</strong><small>${escapeHtml(zone.hint)}</small></div><span class="zone-count">${count}</span></article>`;
+  }).join("");
+  const selectedZone = document.getElementById("zoneFilter").value;
+  const zoneFoods = foods.filter(item => !selectedZone || item.zone === selectedZone).sort((a,b)=>String(a.zone||"").localeCompare(String(b.zone||"")));
+  if (!zoneFoods.length) { list.innerHTML = '<div class="empty">Keine Artikel in dieser Zone.</div>'; return; }
+  list.innerHTML = zoneFoods.map(item => `<article class="zone-item">${item.imageUrl ? `<img class="product-img" src="${escapeHtml(item.imageUrl)}" alt="">` : `<div class="thumb">${iconFor(item.category)}</div>`}<div><strong>${escapeHtml(item.name)}</strong><small>${item.amount} ${escapeHtml(item.unit)} · ${escapeHtml(item.category)}</small></div><span class="zone-badge">${escapeHtml(zoneLabel(item.zone))}</span></article>`).join("");
+}
+if (document.getElementById("zoneFilter")) {
+  document.getElementById("zoneFilter").addEventListener("change", () => { renderFoods(); renderZones(); });
+}
 
 function scrollToSection(targetId) {
   const target = document.getElementById(targetId);

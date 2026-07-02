@@ -30,6 +30,7 @@
           <a href="#bestand" class="nav-link" data-target="bestand">🥛 Bestand</a>
           <a href="#add" class="nav-link" data-target="add">➕ Eintragen</a>
           <a href="#scanner" class="nav-link" data-target="scanner">📷 Scannen</a>
+          <a href="#zones" class="nav-link" data-target="zones">🧊 Zonen</a>
           <a href="#shopping" class="nav-link" data-target="shopping">🛒 Einkaufsliste</a>
           <a href="#recipes" class="nav-link" data-target="recipes">🍳 Rezepte</a>
           <a href="#stats" class="nav-link" data-target="stats">📊 Statistik</a>
@@ -37,7 +38,7 @@
 
         <div class="about-box">
           <strong>ℹ️ Über die App</strong>
-          <small>Kühlschrank Manager v1.5.0<br>© 2026</small>
+          <small>Kühlschrank Manager v1.6.0<br>© 2026</small>
         </div>
       </aside>
 
@@ -45,7 +46,7 @@
         <section id="dashboard" class="welcome">
           <div>
             <h2>👋 Willkommen zurück</h2>
-            <p>Hier ist dein Kühlschrank-Überblick für heute.</p><div class="quick-actions"><button type="button" data-target="bestand">Bestand</button><button type="button" data-target="add">Eintragen</button><button type="button" data-target="scanner">Scannen</button><button type="button" data-target="shopping">Einkauf</button></div>
+            <p>Hier ist dein Kühlschrank-Überblick für heute.</p><div class="quick-actions"><button type="button" data-target="bestand">Bestand</button><button type="button" data-target="add">Eintragen</button><button type="button" data-target="scanner">Scannen</button><button type="button" data-target="zones">Zonen</button><button type="button" data-target="shopping">Einkauf</button></div>
           </div>
           <div class="date-pill" id="today"></div>
         </section>
@@ -146,10 +147,45 @@
                 <option>Gefrierschrank</option>
                 <option>Vorratsschrank</option>
               </select>
+              <select id="zone">
+                <option value="A">Zone A – Tür oben</option>
+                <option value="B">Zone B – Tür unten</option>
+                <option value="C">Zone C – oberes Fach</option>
+                <option value="D">Zone D – mittleres Fach</option>
+                <option value="E">Zone E – Gemüsefach</option>
+                <option value="F">Zone F – Gefrierfach</option>
+              </select>
               <input id="imageUrl" placeholder="Bild-URL">
               <input id="note" placeholder="Notiz">
               <button type="submit">Speichern</button>
             </form>
+          </section>
+        </section>
+
+
+        <section class="grid-2 zone-grid" id="zones">
+          <section class="panel">
+            <header>
+              <h2>🧊 Kühlschrank-Zonen</h2>
+              <p class="panel-subtitle">Klare Aufteilung wie bei einem modernen Kühlschrank.</p>
+            </header>
+            <div class="fridge-map" id="fridgeMap"></div>
+          </section>
+          <section class="panel">
+            <header>
+              <h2>🔎 Bestand nach Zone</h2>
+              <p class="panel-subtitle">Schnell sehen, wo welcher Artikel liegt.</p>
+            </header>
+            <select id="zoneFilter" class="search">
+              <option value="">Alle Zonen</option>
+              <option value="A">Zone A – Tür oben</option>
+              <option value="B">Zone B – Tür unten</option>
+              <option value="C">Zone C – oberes Fach</option>
+              <option value="D">Zone D – mittleres Fach</option>
+              <option value="E">Zone E – Gemüsefach</option>
+              <option value="F">Zone F – Gefrierfach</option>
+            </select>
+            <div id="zoneList" class="zone-list"></div>
           </section>
         </section>
 
@@ -185,7 +221,7 @@
 
         <section class="tip-box">
           <strong>💡 Hinweis:</strong>
-          Beim Scannen wird OpenFoodFacts abgefragt. Die Menge wird als Stückzahl geführt; Inhalt wie ml/g steht in der Notiz.
+          Beim Scannen wird OpenFoodFacts abgefragt. Die Menge wird als Stückzahl geführt. Zusätzlich wird die passende Kühlschrank-Zone vorgeschlagen.
         </section>
       </main>
     </div>
