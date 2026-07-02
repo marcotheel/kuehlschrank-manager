@@ -1,9 +1,227 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kühlschrank Manager</title><link rel="stylesheet" href="style.css"></head><body>
-<div class="app"><aside class="sidebar"><div class="brand"><div class="logo">▣</div><div><h1>Kühlschrank Manager</h1><p>Lebensmittel, Zonen und Einkaufsliste</p></div></div><nav><a class="nav-link active" data-target="dashboard">⌂ Dashboard</a><a class="nav-link" data-target="bestand">▣ Bestand</a><a class="nav-link" data-target="zones">▦ Zonen</a><a class="nav-link" data-target="add">＋ Eintragen</a><a class="nav-link" data-target="scanner">▥ Scannen</a><a class="nav-link" data-target="shopping">🛒 Einkaufsliste</a><a class="nav-link" data-target="recipes">♨ Rezepte</a><a class="nav-link" data-target="stats">▥ Statistik</a></nav><div class="side-card"><strong>Nächste ablaufende</strong><div id="sideExpiring"></div></div><div class="version">Kühlschrank Manager v1.7.0<br>© 2026</div></aside>
-<main class="main"><header class="topbar"><div class="searchbar"><span>▥</span><input id="barcodeInput" inputmode="numeric" placeholder="Barcode scannen oder eingeben"><button id="barcodeSubmit" type="button">Scannen</button></div><button id="themeBtn" type="button" class="icon-btn">☾</button></header>
-<section id="dashboard" class="welcome"><div><h2>👋 Willkommen zurück</h2><p>Dein Kühlschrank-Überblick für heute.</p></div><div class="date-pill" id="today"></div></section>
-<section class="kpi-grid"><article class="kpi red"><span>🔔</span><div><b id="soonCount">0</b><small>Läuft bald ab</small></div></article><article class="kpi orange"><span>📦</span><div><b id="lowCount">0</b><small>Fast leer</small></div></article><article class="kpi green"><span>✅</span><div><b id="totalCount">0</b><small>Gesamtbestand</small></div></article><article class="kpi blue"><span>🛒</span><div><b id="shoppingCount">0</b><small>Einkaufsliste</small></div></article></section>
-<section id="zones" class="dashboard-grid"><section class="panel fridge-panel"><header><h2>Kühlschrank Zonen</h2><p>Artikel werden automatisch passenden Zonen vorgeschlagen.</p></header><div class="fridge-area"><div class="fridge"><div class="fridge-main"><div class="fridge-zone zone-a" data-zone="A"><span>A</span><small>Tür oben</small></div><div class="fridge-zone zone-c" data-zone="C"><span>C</span><small>Oberes Fach</small></div><div class="fridge-zone zone-d" data-zone="D"><span>D</span><small>Mittleres Fach</small></div><div class="fridge-zone zone-e" data-zone="E"><span>E</span><small>Gemüsefach</small></div><div class="fridge-zone zone-f" data-zone="F"><span>F</span><small>Gefrierfach</small></div></div><div class="fridge-door"><div class="fridge-zone zone-b" data-zone="B"><span>B</span><small>Tür unten</small></div></div></div><div class="zone-cards" id="zoneCards"></div></div></section><section class="panel donut-panel"><header><h2>Bestand nach Zonen</h2><p>Verteilung der Artikel im Kühlschrank.</p></header><div class="donut-wrap"><div class="donut" id="zoneDonut"><div><b id="donutTotal">0</b><small>Gesamt</small></div></div><div class="legend" id="zoneLegend"></div></div></section><section class="panel quick-panel"><header><h2>Quick Actions</h2></header><div class="quick-grid"><button data-target="add">＋ Lebensmittel eintragen</button><button data-target="scanner">▥ Barcode scannen</button><button data-target="shopping">🛒 Einkaufsliste anzeigen</button><button data-target="recipes">♨ Rezeptvorschläge</button></div></section></section>
-<section class="content-grid"><section class="panel" id="scanner"><header><h2>Barcode scannen</h2><p>Mit Handy-Kamera scannen oder Barcode manuell eingeben. OpenFoodFacts wird abgefragt.</p></header><div class="scanbox"><div>📷</div><strong>Scanner</strong><span>Handykamera oder Live-Kamera nutzen</span></div><div class="button-row"><button id="mobileScanBtn" type="button">📱 Mit Handy scannen</button><button id="liveScanBtn" type="button" class="secondary">Live-Kamera</button><button id="stopScanBtn" type="button" class="secondary">Stoppen</button></div><input id="mobileImageInput" type="file" accept="image/*" capture="environment" hidden><video id="scannerVideo" playsinline muted></video><p id="scanResult" class="hint"></p></section><section class="panel" id="add"><header><h2>Lebensmittel eintragen</h2></header><form id="foodForm" class="food-form"><input id="barcodeField" placeholder="Barcode" inputmode="numeric"><input id="brand" placeholder="Marke / Hersteller"><input id="name" placeholder="Name, z. B. Milch" required><select id="category"><option>Milchprodukte</option><option>Fleisch / Wurst</option><option>Gemüse</option><option>Obst</option><option>Getränke</option><option>Vorrat</option><option>Sonstiges</option></select><input id="amount" type="number" step="1" value="1" required><input id="unit" value="Stück" required><input id="minAmount" type="number" step="1" value="1" required><input id="expiry" type="date"><select id="location"><option>Kühlschrank</option><option>Gefrierschrank</option><option>Vorratsschrank</option></select><select id="zone"><option value="A">Zone A – Tür oben</option><option value="B">Zone B – Tür unten</option><option value="C">Zone C – oberes Fach</option><option value="D">Zone D – mittleres Fach</option><option value="E">Zone E – Gemüsefach</option><option value="F">Zone F – Gefrierfach</option></select><input id="imageUrl" placeholder="Bild-URL"><input id="note" placeholder="Notiz"><button type="submit">Speichern</button></form></section></section>
-<section class="content-grid wide-left"><section class="panel" id="bestand"><header><h2>Bestand</h2><p>Mit + / − Stückzahl ändern oder Artikel entnehmen.</p></header><div class="filter-row"><input id="search" placeholder="Lebensmittel suchen..."><select id="zoneFilter"><option value="">Alle Zonen</option><option value="A">Zone A</option><option value="B">Zone B</option><option value="C">Zone C</option><option value="D">Zone D</option><option value="E">Zone E</option><option value="F">Zone F</option></select></div><div id="foodList" class="food-list"></div></section><section class="panel" id="shopping"><header><h2>Einkaufsliste</h2></header><div id="shoppingList"></div><form id="shoppingForm" class="inline-form"><input id="shoppingName" placeholder="Artikel hinzufügen"><button>＋</button></form></section></section>
-<section class="content-grid"><section class="panel" id="recipes"><header><h2>Rezeptvorschläge</h2></header><div class="recipe-grid"><article><div>🍝</div><b>Spaghetti Carbonara</b><small>20 Min.</small></article><article><div>🥘</div><b>Gemüsepfanne</b><small>25 Min.</small></article><article><div>🍳</div><b>Omelett</b><small>15 Min.</small></article></div></section><section class="panel" id="stats"><header><h2>Statistik</h2></header><div class="stats-grid"><article><b id="statTotal">0</b><span>Gesamtbestand</span></article><article><b id="statExpired">0</b><span>Abgelaufen</span></article><article><b id="statLow">0</b><span>Fast leer</span></article><article><b id="statShopping">0</b><span>Einkauf</span></article></div></section></section></main></div><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Fridge Manager V2</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app dark" id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">🧊</div>
+      <div>
+        <h1>Smart Fridge Manager</h1>
+        <p>Lebensmittel, Zonen und Einkauf</p>
+      </div>
+    </div>
+
+    <nav>
+      <button class="nav active" data-target="dashboard">🏠 Dashboard</button>
+      <button class="nav" data-target="fridge">🧊 Kühlschrank</button>
+      <button class="nav" data-target="scanner">📷 Scanner</button>
+      <button class="nav" data-target="inventory">📦 Bestand</button>
+      <button class="nav" data-target="shopping">🛒 Einkauf</button>
+      <button class="nav" data-target="recipes">🍳 Rezepte</button>
+      <button class="nav" data-target="stats">📊 Statistik</button>
+    </nav>
+
+    <section class="side-panel">
+      <h3>Nächste ablaufende</h3>
+      <div id="sidebarExpiring"></div>
+    </section>
+
+    <small class="version">Smart Fridge Manager V2.0<br>GitHub Pages Version</small>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="barcode-bar">
+        <span>▥</span>
+        <input id="barcodeInput" inputmode="numeric" placeholder="Barcode scannen oder eingeben...">
+        <button id="barcodeButton">Scannen</button>
+      </div>
+      <button id="themeToggle" class="theme-toggle">🌙 Dark Mode</button>
+    </header>
+
+    <section id="dashboard" class="hero">
+      <div>
+        <h2>Willkommen zurück</h2>
+        <p>Dein digitaler Kühlschrank mit Zonen, Bestand und Einkaufsliste.</p>
+      </div>
+      <div class="date" id="today"></div>
+    </section>
+
+    <section class="kpi-grid">
+      <article class="kpi danger"><span>🔔</span><div><b id="kpiExpiring">0</b><small>Läuft bald ab</small></div></article>
+      <article class="kpi warning"><span>📦</span><div><b id="kpiLow">0</b><small>Fast leer</small></div></article>
+      <article class="kpi success"><span>✅</span><div><b id="kpiTotal">0</b><small>Gesamtbestand</small></div></article>
+      <article class="kpi info"><span>🛒</span><div><b id="kpiShopping">0</b><small>Einkaufsliste</small></div></article>
+    </section>
+
+    <section id="fridge" class="fridge-layout">
+      <section class="panel fridge-panel">
+        <header>
+          <h2>Kühlschrank Zonen</h2>
+          <p>Die Artikel werden automatisch der passenden Zone vorgeschlagen.</p>
+        </header>
+
+        <div class="fridge-content">
+          <div class="fridge-visual">
+            <div class="fridge-body">
+              <div class="shelf zone-a" data-zone="A"><b>A</b><span>Tür oben</span><div id="zoneItemsA"></div></div>
+              <div class="shelf zone-c" data-zone="C"><b>C</b><span>Oberes Fach</span><div id="zoneItemsC"></div></div>
+              <div class="shelf zone-d" data-zone="D"><b>D</b><span>Mittleres Fach</span><div id="zoneItemsD"></div></div>
+              <div class="shelf zone-e" data-zone="E"><b>E</b><span>Gemüsefach</span><div id="zoneItemsE"></div></div>
+              <div class="shelf zone-f" data-zone="F"><b>F</b><span>Gefrierfach</span><div id="zoneItemsF"></div></div>
+            </div>
+            <div class="fridge-door">
+              <div class="door-zone zone-b" data-zone="B"><b>B</b><span>Tür unten</span><div id="zoneItemsB"></div></div>
+            </div>
+          </div>
+
+          <div class="zone-list" id="zoneCards"></div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <header>
+          <h2>Bestand nach Zonen</h2>
+          <p>Verteilung deiner Lebensmittel.</p>
+        </header>
+        <div class="donut-box">
+          <div class="donut" id="donut"><div><b id="donutTotal">0</b><span>Gesamt</span></div></div>
+          <div id="legend" class="legend"></div>
+        </div>
+
+        <div class="quick-actions">
+          <button data-target="scanner">📷 Barcode scannen</button>
+          <button data-target="inventory">📦 Bestand anzeigen</button>
+          <button data-target="shopping">🛒 Einkaufsliste</button>
+          <button data-target="recipes">🍳 Rezepte</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="two-col">
+      <section id="scanner" class="panel">
+        <header>
+          <h2>Scanner</h2>
+          <p>OpenFoodFacts wird nach dem Barcode automatisch abgefragt.</p>
+        </header>
+        <div class="scanner-card">
+          <div class="scanner-icon">📷</div>
+          <strong>Barcode scannen</strong>
+          <span>Handykamera oder manuelle Eingabe</span>
+        </div>
+        <div class="button-row">
+          <button id="mobileScan">📱 Mit Handy scannen</button>
+          <button id="liveScan" class="secondary">Live-Kamera</button>
+          <button id="stopScan" class="secondary">Stoppen</button>
+        </div>
+        <input id="mobileImage" type="file" accept="image/*" capture="environment" hidden>
+        <video id="video" playsinline muted></video>
+        <p id="scanStatus" class="status"></p>
+      </section>
+
+      <section id="add" class="panel">
+        <header>
+          <h2>Lebensmittel eintragen</h2>
+          <p>Nach dem Scan werden die Felder automatisch befüllt.</p>
+        </header>
+        <form id="foodForm" class="form-grid">
+          <input id="barcodeField" placeholder="Barcode">
+          <input id="brand" placeholder="Marke / Hersteller">
+          <input id="name" placeholder="Name" required>
+          <select id="category">
+            <option>Milchprodukte</option>
+            <option>Fleisch / Wurst</option>
+            <option>Gemüse</option>
+            <option>Obst</option>
+            <option>Getränke</option>
+            <option>Vorrat</option>
+            <option>Sonstiges</option>
+          </select>
+          <input id="amount" type="number" step="1" value="1">
+          <input id="unit" value="Stück">
+          <input id="minAmount" type="number" step="1" value="1">
+          <input id="expiry" type="date">
+          <select id="zone">
+            <option value="A">Zone A – Tür oben</option>
+            <option value="B">Zone B – Tür unten</option>
+            <option value="C">Zone C – Oberes Fach</option>
+            <option value="D">Zone D – Mittleres Fach</option>
+            <option value="E">Zone E – Gemüsefach</option>
+            <option value="F">Zone F – Gefrierfach</option>
+          </select>
+          <input id="imageUrl" placeholder="Bild-URL">
+          <input id="note" placeholder="Notiz / Inhalt">
+          <button type="submit">Speichern</button>
+        </form>
+      </section>
+    </section>
+
+    <section class="two-col wide-left">
+      <section id="inventory" class="panel">
+        <header>
+          <h2>Bestand</h2>
+          <p>Mit + / − Stückzahl ändern oder komplett entnehmen.</p>
+        </header>
+        <div class="filters">
+          <input id="search" placeholder="Suchen...">
+          <select id="zoneFilter">
+            <option value="">Alle Zonen</option>
+            <option value="A">Zone A</option>
+            <option value="B">Zone B</option>
+            <option value="C">Zone C</option>
+            <option value="D">Zone D</option>
+            <option value="E">Zone E</option>
+            <option value="F">Zone F</option>
+          </select>
+        </div>
+        <div id="inventoryList" class="inventory-list"></div>
+      </section>
+
+      <section id="shopping" class="panel">
+        <header>
+          <h2>Einkaufsliste</h2>
+        </header>
+        <div id="shoppingList"></div>
+        <form id="shoppingForm" class="inline-form">
+          <input id="shoppingName" placeholder="Artikel hinzufügen">
+          <button>+</button>
+        </form>
+      </section>
+    </section>
+
+    <section class="two-col">
+      <section id="recipes" class="panel">
+        <header>
+          <h2>Rezeptvorschläge</h2>
+        </header>
+        <div class="recipes">
+          <article><div>🍝</div><b>Spaghetti Carbonara</b><small>20 Min.</small></article>
+          <article><div>🥘</div><b>Gemüsepfanne</b><small>25 Min.</small></article>
+          <article><div>🍳</div><b>Omelett</b><small>15 Min.</small></article>
+        </div>
+      </section>
+
+      <section id="stats" class="panel">
+        <header>
+          <h2>Statistik</h2>
+        </header>
+        <div class="stats-grid">
+          <article><b id="statTotal">0</b><span>Gesamtbestand</span></article>
+          <article><b id="statExpired">0</b><span>Abgelaufen</span></article>
+          <article><b id="statLow">0</b><span>Fast leer</span></article>
+          <article><b id="statShopping">0</b><span>Einkauf</span></article>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
