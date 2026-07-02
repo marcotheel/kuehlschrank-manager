@@ -1,6 +1,6 @@
-const FOOD_KEY = "km_html_foods_v13";
-const SHOPPING_KEY = "km_html_shopping_v13";
-const THEME_KEY = "km_html_dark_v13";
+const FOOD_KEY = "km_html_foods_v14";
+const SHOPPING_KEY = "km_html_shopping_v14";
+const THEME_KEY = "km_html_dark_v14";
 
 const demoFoods = [
   { id: "1", barcode: "4012345678901", name: "Milch", category: "Milchprodukte", amount: 1, unit: "l", minAmount: 1, expiry: todayOffset(0), location: "Kühlschrank", note: "Heute verbrauchen" },
@@ -182,11 +182,12 @@ function renderFoods() {
     const days = daysUntil(item.expiry);
     return `
       <article class="food-card">
-        <div class="thumb">${iconFor(item.category)}</div>
+        ${item.imageUrl ? `<img class="product-img" src="${escapeHtml(item.imageUrl)}" alt="">` : `<div class="thumb">${iconFor(item.category)}</div>`}
         <div>
           <h3>${escapeHtml(item.name)}</h3>
-          <p>${escapeHtml(item.category)} · ${escapeHtml(item.location)}</p>
+          <p>${escapeHtml(item.brand || "")}${item.brand ? " · " : ""}${escapeHtml(item.category)} · ${escapeHtml(item.location)}</p>
           <small>${item.amount} ${escapeHtml(item.unit)} · Ablauf: ${expiryText(days)}${item.barcode ? " · Barcode: " + escapeHtml(item.barcode) : ""}</small>
+          ${item.source === "OpenFoodFacts" ? `<span class="off-badge">OpenFoodFacts</span>` : ""}
         </div>
         <div class="food-actions">
           <div class="qty-actions">
@@ -214,6 +215,9 @@ document.getElementById("foodForm").addEventListener("submit", (event) => {
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
     barcode: document.getElementById("barcodeField").value.trim() || document.getElementById("barcodeInput").value.trim(),
     name,
+    brand: document.getElementById("brand").value.trim(),
+    imageUrl: document.getElementById("imageUrl").value.trim(),
+    source: document.getElementById("imageUrl").value.trim() ? "OpenFoodFacts" : "",
     category: document.getElementById("category").value,
     amount: Number(document.getElementById("amount").value || 1),
     unit: document.getElementById("unit").value.trim() || "Stück",
@@ -232,6 +236,8 @@ document.getElementById("foodForm").addEventListener("submit", (event) => {
   document.getElementById("unit").value = "Stück";
   document.getElementById("barcodeInput").value = "";
   document.getElementById("barcodeField").value = "";
+  document.getElementById("brand").value = "";
+  document.getElementById("imageUrl").value = "";
   document.getElementById("scanResult").textContent = `Gespeichert: ${item.name}`;
 
   render();
@@ -420,33 +426,111 @@ function stopLiveScanner() {
   placeholder.style.display = "grid";
 }
 
-function applyBarcode(barcode) {
+async function applyBarcode(barcode) {
   const result = document.getElementById("scanResult");
-  const product = productDatabase[barcode];
 
   document.getElementById("barcodeInput").value = barcode;
   document.getElementById("barcodeField").value = barcode;
+  result.textContent = `Barcode erkannt: ${barcode}. Suche bei OpenFoodFacts läuft...`;
+
+  const offProduct = await lookupOpenFoodFacts(barcode);
+
+  if (offProduct) {
+    document.getElementById("name").value = offProduct.name;
+    document.getElementById("brand").value = offProduct.brand || "";
+    document.getElementById("category").value = offProduct.category;
+    document.getElementById("amount").value = offProduct.amount;
+    document.getElementById("unit").value = offProduct.unit;
+    document.getElementById("minAmount").value = offProduct.minAmount;
+    document.getElementById("location").value = offProduct.location;
+    document.getElementById("imageUrl").value = offProduct.imageUrl || "";
+    if (!document.getElementById("expiry").value) document.getElementById("expiry").value = todayOffset(7);
+    result.textContent = `OpenFoodFacts gefunden: ${offProduct.name}. Ablaufdatum prüfen und speichern.`;
+    document.getElementById("add").scrollIntoView({ behavior: "smooth" });
+    return;
+  }
+
+  const product = productDatabase[barcode];
 
   if (product) {
     document.getElementById("name").value = product.name;
+    document.getElementById("brand").value = product.brand || "";
     document.getElementById("category").value = product.category;
     document.getElementById("amount").value = product.amount;
     document.getElementById("unit").value = product.unit;
     document.getElementById("minAmount").value = product.minAmount;
     document.getElementById("location").value = product.location;
-    if (!document.getElementById("expiry").value) {
-      document.getElementById("expiry").value = todayOffset(7);
-    }
-    result.textContent = `Barcode erkannt und ins Formular übernommen: ${barcode} – ${product.name}. Jetzt speichern.`;
+    if (!document.getElementById("expiry").value) document.getElementById("expiry").value = todayOffset(7);
+    result.textContent = `Lokale Produktdaten gefunden: ${barcode} – ${product.name}. Jetzt speichern.`;
   } else {
-    if (!document.getElementById("expiry").value) {
-      document.getElementById("expiry").value = todayOffset(7);
-    }
-    result.textContent = `Barcode ins Formular übernommen: ${barcode}. Artikel bitte ergänzen und speichern.`;
+    if (!document.getElementById("expiry").value) document.getElementById("expiry").value = todayOffset(7);
+    result.textContent = `Kein Produkt bei OpenFoodFacts gefunden. Barcode wurde übernommen, Artikel bitte manuell ergänzen.`;
     document.getElementById("name").focus();
   }
 
   document.getElementById("add").scrollIntoView({ behavior: "smooth" });
+}
+
+async function lookupOpenFoodFacts(barcode) {
+  try {
+    const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}?fields=product_name,product_name_de,brands,categories_tags,categories,quantity,product_quantity,product_quantity_unit,image_front_small_url,image_front_url`;
+    const response = await fetch(url, { headers: { "Accept": "application/json" } });
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    if (data.status !== 1 || !data.product) return null;
+
+    const p = data.product;
+    const name = p.product_name_de || p.product_name;
+    if (!name) return null;
+
+    const quantity = parseQuantity(p.quantity, p.product_quantity, p.product_quantity_unit);
+
+    return {
+      name,
+      brand: p.brands || "",
+      category: mapOpenFoodFactsCategory(p.categories_tags || [], p.categories || ""),
+      amount: quantity.amount,
+      unit: quantity.unit,
+      minAmount: 1,
+      location: "Kühlschrank",
+      imageUrl: p.image_front_small_url || p.image_front_url || "",
+      source: "OpenFoodFacts"
+    };
+  } catch {
+    return null;
+  }
+}
+
+function parseQuantity(quantityText, productQuantity, productQuantityUnit) {
+  if (productQuantity && productQuantityUnit) {
+    return { amount: Number(productQuantity) || 1, unit: productQuantityUnit };
+  }
+
+  const text = String(quantityText || "").replace(",", ".").trim();
+  const match = text.match(/([0-9]+(?:\.[0-9]+)?)\s*(ml|l|g|kg|stück|st|pcs|cl|becher|dose|flasche)/i);
+  if (!match) return { amount: 1, unit: "Stück" };
+
+  let amount = Number(match[1]);
+  let unit = match[2].toLowerCase();
+
+  if (unit === "ml") { amount = amount / 1000; unit = "l"; }
+  if (unit === "st" || unit === "pcs") unit = "Stück";
+
+  return { amount, unit };
+}
+
+function mapOpenFoodFactsCategory(tags, categoriesText) {
+  const combined = `${Array.isArray(tags) ? tags.join(" ") : ""} ${categoriesText}`.toLowerCase();
+
+  if (combined.includes("dair") || combined.includes("milch") || combined.includes("käse") || combined.includes("yogurt") || combined.includes("joghurt")) return "Milchprodukte";
+  if (combined.includes("meat") || combined.includes("wurst") || combined.includes("fleisch") || combined.includes("sausage")) return "Fleisch / Wurst";
+  if (combined.includes("vegetable") || combined.includes("gemüse") || combined.includes("salat")) return "Gemüse";
+  if (combined.includes("fruit") || combined.includes("obst")) return "Obst";
+  if (combined.includes("beverage") || combined.includes("drink") || combined.includes("getränk") || combined.includes("wasser") || combined.includes("saft")) return "Getränke";
+  if (combined.includes("canned") || combined.includes("konserve") || combined.includes("vorrat")) return "Vorrat";
+
+  return "Sonstiges";
 }
 
 function escapeHtml(value) {

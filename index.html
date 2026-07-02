@@ -37,7 +37,7 @@
 
         <div class="about-box">
           <strong>ℹ️ Über die App</strong>
-          <small>Kühlschrank Manager v1.3.0<br>© 2026</small>
+          <small>Kühlschrank Manager v1.4.0<br>© 2026</small>
         </div>
       </aside>
 
@@ -94,7 +94,7 @@
           <section class="panel" id="scanner">
             <header>
               <h2>📷 Artikel scannen</h2>
-              <p class="panel-subtitle">Für Handy empfohlen: „Mit Handy scannen“. Danach Artikel prüfen und speichern.</p>
+              <p class="panel-subtitle">Barcode scannen. Produktdaten werden automatisch über OpenFoodFacts gesucht.</p>
             </header>
 
             <div class="scanner-box">
@@ -126,6 +126,7 @@
             <header><h2>➕ Lebensmittel eintragen</h2></header>
             <form id="foodForm" class="food-form">
               <input id="barcodeField" placeholder="Barcode" inputmode="numeric">
+              <input id="brand" placeholder="Marke / Hersteller">
               <input id="name" placeholder="Name, z.B. Milch" required>
               <select id="category">
                 <option>Milchprodukte</option>
@@ -145,6 +146,7 @@
                 <option>Gefrierschrank</option>
                 <option>Vorratsschrank</option>
               </select>
+              <input id="imageUrl" placeholder="Bild-URL">
               <input id="note" placeholder="Notiz">
               <button type="submit">Speichern</button>
             </form>
@@ -183,7 +185,7 @@
 
         <section class="tip-box">
           <strong>💡 Hinweis:</strong>
-          Entnehmen reduziert den Bestand. Der Scanner trägt den Barcode sichtbar in das Formular ein; danach bitte speichern.
+          Beim Scannen wird OpenFoodFacts abgefragt. Wird nichts gefunden, kannst du den Artikel manuell anlegen.
         </section>
       </main>
     </div>
