@@ -26,18 +26,18 @@
     <div class="layout">
       <aside class="sidebar">
         <nav>
-          <a href="#dashboard" class="active">🏠 Dashboard</a>
-          <a href="#bestand">🥛 Bestand</a>
-          <a href="#add">➕ Eintragen</a>
-          <a href="#scanner">📷 Scannen</a>
-          <a href="#shopping">🛒 Einkaufsliste</a>
-          <a href="#recipes">🍳 Rezepte</a>
-          <a href="#stats">📊 Statistik</a>
+          <a href="#dashboard" class="nav-link active" data-target="dashboard">🏠 Dashboard</a>
+          <a href="#bestand" class="nav-link" data-target="bestand">🥛 Bestand</a>
+          <a href="#add" class="nav-link" data-target="add">➕ Eintragen</a>
+          <a href="#scanner" class="nav-link" data-target="scanner">📷 Scannen</a>
+          <a href="#shopping" class="nav-link" data-target="shopping">🛒 Einkaufsliste</a>
+          <a href="#recipes" class="nav-link" data-target="recipes">🍳 Rezepte</a>
+          <a href="#stats" class="nav-link" data-target="stats">📊 Statistik</a>
         </nav>
 
         <div class="about-box">
           <strong>ℹ️ Über die App</strong>
-          <small>Kühlschrank Manager v1.4.0<br>© 2026</small>
+          <small>Kühlschrank Manager v1.5.0<br>© 2026</small>
         </div>
       </aside>
 
@@ -45,7 +45,7 @@
         <section id="dashboard" class="welcome">
           <div>
             <h2>👋 Willkommen zurück</h2>
-            <p>Hier ist dein Kühlschrank-Überblick für heute.</p>
+            <p>Hier ist dein Kühlschrank-Überblick für heute.</p><div class="quick-actions"><button type="button" data-target="bestand">Bestand</button><button type="button" data-target="add">Eintragen</button><button type="button" data-target="scanner">Scannen</button><button type="button" data-target="shopping">Einkauf</button></div>
           </div>
           <div class="date-pill" id="today"></div>
         </section>
@@ -185,7 +185,7 @@
 
         <section class="tip-box">
           <strong>💡 Hinweis:</strong>
-          Beim Scannen wird OpenFoodFacts abgefragt. Wird nichts gefunden, kannst du den Artikel manuell anlegen.
+          Beim Scannen wird OpenFoodFacts abgefragt. Die Menge wird als Stückzahl geführt; Inhalt wie ml/g steht in der Notiz.
         </section>
       </main>
     </div>

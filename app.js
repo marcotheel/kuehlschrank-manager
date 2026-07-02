@@ -1,6 +1,6 @@
-const FOOD_KEY = "km_html_foods_v14";
-const SHOPPING_KEY = "km_html_shopping_v14";
-const THEME_KEY = "km_html_dark_v14";
+const FOOD_KEY = "km_html_foods_v15";
+const SHOPPING_KEY = "km_html_shopping_v15";
+const THEME_KEY = "km_html_dark_v15";
 
 const demoFoods = [
   { id: "1", barcode: "4012345678901", name: "Milch", category: "Milchprodukte", amount: 1, unit: "l", minAmount: 1, expiry: todayOffset(0), location: "Kühlschrank", note: "Heute verbrauchen" },
@@ -26,6 +26,14 @@ const productDatabase = {
 
 let foods = load(FOOD_KEY, demoFoods);
 let shopping = load(SHOPPING_KEY, demoShopping);
+foods = foods.map(item => {
+  if (item.source === "OpenFoodFacts" && item.unit !== "Stück") {
+    return {...item, amount: 1, unit: "Stück", note: item.note || `Inhalt: ${item.amount} ${item.unit}`};
+  }
+  return item;
+});
+save();
+
 let stream = null;
 let scanTimer = null;
 let lastBarcode = "";
@@ -186,7 +194,7 @@ function renderFoods() {
         <div>
           <h3>${escapeHtml(item.name)}</h3>
           <p>${escapeHtml(item.brand || "")}${item.brand ? " · " : ""}${escapeHtml(item.category)} · ${escapeHtml(item.location)}</p>
-          <small>${item.amount} ${escapeHtml(item.unit)} · Ablauf: ${expiryText(days)}${item.barcode ? " · Barcode: " + escapeHtml(item.barcode) : ""}</small>
+          <small>${item.amount} ${escapeHtml(item.unit)} · Ablauf: ${expiryText(days)}${item.note ? " · " + escapeHtml(item.note) : ""}${item.barcode ? " · Barcode: " + escapeHtml(item.barcode) : ""}</small>
           ${item.source === "OpenFoodFacts" ? `<span class="off-badge">OpenFoodFacts</span>` : ""}
         </div>
         <div class="food-actions">
@@ -444,8 +452,9 @@ async function applyBarcode(barcode) {
     document.getElementById("minAmount").value = offProduct.minAmount;
     document.getElementById("location").value = offProduct.location;
     document.getElementById("imageUrl").value = offProduct.imageUrl || "";
+    document.getElementById("note").value = offProduct.productSize ? `Inhalt: ${offProduct.productSize}` : "";
     if (!document.getElementById("expiry").value) document.getElementById("expiry").value = todayOffset(7);
-    result.textContent = `OpenFoodFacts gefunden: ${offProduct.name}. Ablaufdatum prüfen und speichern.`;
+    result.textContent = `OpenFoodFacts gefunden: ${offProduct.name}. Bestand wird als 1 Stück angelegt. Ablaufdatum prüfen und speichern.`;
     document.getElementById("add").scrollIntoView({ behavior: "smooth" });
     return;
   }
@@ -490,12 +499,13 @@ async function lookupOpenFoodFacts(barcode) {
       name,
       brand: p.brands || "",
       category: mapOpenFoodFactsCategory(p.categories_tags || [], p.categories || ""),
-      amount: quantity.amount,
-      unit: quantity.unit,
+      amount: 1,
+      unit: "Stück",
       minAmount: 1,
       location: "Kühlschrank",
       imageUrl: p.image_front_small_url || p.image_front_url || "",
-      source: "OpenFoodFacts"
+      source: "OpenFoodFacts",
+      productSize: quantity.label
     };
   } catch {
     return null;
@@ -509,7 +519,7 @@ function parseQuantity(quantityText, productQuantity, productQuantityUnit) {
 
   const text = String(quantityText || "").replace(",", ".").trim();
   const match = text.match(/([0-9]+(?:\.[0-9]+)?)\s*(ml|l|g|kg|stück|st|pcs|cl|becher|dose|flasche)/i);
-  if (!match) return { amount: 1, unit: "Stück" };
+  if (!match) return { amount: 1, unit: "Stück", label: quantityText || "" };
 
   let amount = Number(match[1]);
   let unit = match[2].toLowerCase();
@@ -517,7 +527,7 @@ function parseQuantity(quantityText, productQuantity, productQuantityUnit) {
   if (unit === "ml") { amount = amount / 1000; unit = "l"; }
   if (unit === "st" || unit === "pcs") unit = "Stück";
 
-  return { amount, unit };
+  return { amount, unit, label: quantityText || `${amount} ${unit}` };
 }
 
 function mapOpenFoodFactsCategory(tags, categoriesText) {
@@ -542,6 +552,27 @@ function escapeHtml(value) {
     "'": "&#039;"
   }[char]));
 }
+
+
+function scrollToSection(targetId) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.querySelectorAll(".nav-link").forEach(link => {
+    link.classList.toggle("active", link.dataset.target === targetId);
+  });
+  target.classList.add("section-highlight");
+  setTimeout(() => target.classList.remove("section-highlight"), 900);
+}
+
+document.querySelectorAll(".nav-link, .quick-actions button").forEach(element => {
+  element.addEventListener("click", (event) => {
+    const targetId = element.dataset.target;
+    if (!targetId) return;
+    event.preventDefault();
+    scrollToSection(targetId);
+  });
+});
 
 const savedTheme = localStorage.getItem(THEME_KEY);
 if (savedTheme === "0") {
