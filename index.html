@@ -37,7 +37,7 @@
 
         <div class="about-box">
           <strong>ℹ️ Über die App</strong>
-          <small>Kühlschrank Manager v1.2.0<br>© 2026</small>
+          <small>Kühlschrank Manager v1.3.0<br>© 2026</small>
         </div>
       </aside>
 
@@ -94,7 +94,7 @@
           <section class="panel" id="scanner">
             <header>
               <h2>📷 Artikel scannen</h2>
-              <p class="panel-subtitle">Für Handy empfohlen: „Mit Handy scannen“. Das nutzt die interne Kamera.</p>
+              <p class="panel-subtitle">Für Handy empfohlen: „Mit Handy scannen“. Danach Artikel prüfen und speichern.</p>
             </header>
 
             <div class="scanner-box">
@@ -125,6 +125,7 @@
           <section class="panel" id="add">
             <header><h2>➕ Lebensmittel eintragen</h2></header>
             <form id="foodForm" class="food-form">
+              <input id="barcodeField" placeholder="Barcode" inputmode="numeric">
               <input id="name" placeholder="Name, z.B. Milch" required>
               <select id="category">
                 <option>Milchprodukte</option>
@@ -152,7 +153,10 @@
 
         <section class="grid-2 bestand-grid">
           <section class="panel" id="bestand">
-            <header><h2>🥛 Bestand</h2></header>
+            <header>
+              <h2>🥛 Bestand</h2>
+              <p class="panel-subtitle">Mit + / - Menge ändern oder komplett entnehmen.</p>
+            </header>
             <input id="search" class="search" placeholder="Lebensmittel suchen...">
             <div id="foodList" class="food-cards"></div>
           </section>
@@ -179,7 +183,7 @@
 
         <section class="tip-box">
           <strong>💡 Hinweis:</strong>
-          Auf dem Handy öffnet „Mit Handy scannen“ die interne Kamera. Die automatische Barcode-Erkennung hängt vom Browser ab. Manuelle Eingabe funktioniert immer.
+          Entnehmen reduziert den Bestand. Der Scanner trägt den Barcode sichtbar in das Formular ein; danach bitte speichern.
         </section>
       </main>
     </div>

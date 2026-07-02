@@ -1,6 +1,6 @@
-const FOOD_KEY = "km_html_foods_v12";
-const SHOPPING_KEY = "km_html_shopping_v12";
-const THEME_KEY = "km_html_dark_v12";
+const FOOD_KEY = "km_html_foods_v13";
+const SHOPPING_KEY = "km_html_shopping_v13";
+const THEME_KEY = "km_html_dark_v13";
 
 const demoFoods = [
   { id: "1", barcode: "4012345678901", name: "Milch", category: "Milchprodukte", amount: 1, unit: "l", minAmount: 1, expiry: todayOffset(0), location: "Kühlschrank", note: "Heute verbrauchen" },
@@ -188,7 +188,14 @@ function renderFoods() {
           <p>${escapeHtml(item.category)} · ${escapeHtml(item.location)}</p>
           <small>${item.amount} ${escapeHtml(item.unit)} · Ablauf: ${expiryText(days)}${item.barcode ? " · Barcode: " + escapeHtml(item.barcode) : ""}</small>
         </div>
-        <button class="delete-btn" onclick="deleteFood('${item.id}')" type="button">🗑</button>
+        <div class="food-actions">
+          <div class="qty-actions">
+            <button class="action-btn" onclick="changeAmount('${item.id}', -1)" type="button">−</button>
+            <button class="action-btn" onclick="changeAmount('${item.id}', 1)" type="button">+</button>
+          </div>
+          <button class="consume-btn" onclick="consumeFood('${item.id}')" type="button">Entnehmen</button>
+          <button class="delete-btn" onclick="deleteFood('${item.id}')" type="button">🗑</button>
+        </div>
       </article>
     `;
   }).join("");
@@ -205,7 +212,7 @@ document.getElementById("foodForm").addEventListener("submit", (event) => {
 
   const item = {
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-    barcode: document.getElementById("barcodeInput").value.trim(),
+    barcode: document.getElementById("barcodeField").value.trim() || document.getElementById("barcodeInput").value.trim(),
     name,
     category: document.getElementById("category").value,
     amount: Number(document.getElementById("amount").value || 1),
@@ -224,6 +231,7 @@ document.getElementById("foodForm").addEventListener("submit", (event) => {
   document.getElementById("minAmount").value = 1;
   document.getElementById("unit").value = "Stück";
   document.getElementById("barcodeInput").value = "";
+  document.getElementById("barcodeField").value = "";
   document.getElementById("scanResult").textContent = `Gespeichert: ${item.name}`;
 
   render();
@@ -269,6 +277,24 @@ function toggleTheme() {
   const isDark = document.getElementById("app").classList.contains("dark");
   localStorage.setItem(THEME_KEY, isDark ? "1" : "0");
   document.getElementById("themeBtn").textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+}
+
+
+function changeAmount(id, delta) {
+  foods = foods.map(item => {
+    if (item.id !== id) return item;
+    const nextAmount = Math.max(0, Number(item.amount) + delta);
+    return { ...item, amount: nextAmount };
+  }).filter(item => Number(item.amount) > 0);
+
+  save();
+  render();
+}
+
+function consumeFood(id) {
+  foods = foods.filter(item => item.id !== id);
+  save();
+  render();
 }
 
 function deleteFood(id) {
@@ -399,6 +425,7 @@ function applyBarcode(barcode) {
   const product = productDatabase[barcode];
 
   document.getElementById("barcodeInput").value = barcode;
+  document.getElementById("barcodeField").value = barcode;
 
   if (product) {
     document.getElementById("name").value = product.name;
@@ -410,12 +437,12 @@ function applyBarcode(barcode) {
     if (!document.getElementById("expiry").value) {
       document.getElementById("expiry").value = todayOffset(7);
     }
-    result.textContent = `Barcode erkannt: ${barcode} – ${product.name}. Ablaufdatum prüfen und speichern.`;
+    result.textContent = `Barcode erkannt und ins Formular übernommen: ${barcode} – ${product.name}. Jetzt speichern.`;
   } else {
     if (!document.getElementById("expiry").value) {
       document.getElementById("expiry").value = todayOffset(7);
     }
-    result.textContent = `Barcode übernommen: ${barcode}. Artikel bitte manuell ergänzen und speichern.`;
+    result.textContent = `Barcode ins Formular übernommen: ${barcode}. Artikel bitte ergänzen und speichern.`;
     document.getElementById("name").focus();
   }
 

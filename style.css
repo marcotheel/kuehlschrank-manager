@@ -486,3 +486,43 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+
+.food-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qty-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.action-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  background: rgba(11,99,246,0.16);
+  color: #60a5fa;
+}
+
+.consume-btn {
+  background: rgba(3,152,85,0.18);
+  color: #34d399;
+  height: 34px;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .food-card {
+    grid-template-columns: auto 1fr;
+  }
+
+  .food-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

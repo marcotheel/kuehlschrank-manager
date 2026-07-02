@@ -1,34 +1,19 @@
-# Kühlschrank Manager v1.2.0
+# Kühlschrank Manager v1.3.0
 
-Reine HTML-/CSS-/JavaScript-App für GitHub Pages.
+## Änderungen
 
-## Änderungen in v1.2.0
-
-- Speichern neuer Artikel korrigiert und robuster gemacht
-- Ablaufdatum ist nicht mehr zwingend erforderlich
-- Wenn kein Ablaufdatum gesetzt ist, wird automatisch +7 Tage verwendet
-- Handy-Scan ergänzt
-- Button „Mit Handy scannen“ nutzt die interne Handykamera
-- Live-Kamera bleibt optional
-- Manuelle Barcode-Eingabe bleibt erhalten
-- Dark Mode ist standardmäßig aktiv
+- Entnehmen-Funktion im Bestand ergänzt
+- Menge kann mit `+` und `−` geändert werden
+- Button `Entnehmen` entfernt den Artikel komplett aus dem Bestand
+- Barcode-Feld im Lebensmittel-Formular ergänzt
+- Erkannter Barcode wird sichtbar ins Formular übernommen
+- Beim Speichern wird der Barcode am Artikel gespeichert
 
 ## GitHub Pages
 
-Einfach diese Dateien im Repository ersetzen:
+Diese Dateien im Repository ersetzen:
 
 - index.html
 - style.css
 - app.js
 - README.md
-
-## Scanner-Hinweis
-
-Der Button „Mit Handy scannen“ öffnet auf Smartphones die Kamera-App über:
-
-```html
-<input type="file" accept="image/*" capture="environment">
-```
-
-Die automatische Barcode-Erkennung hängt vom Browser ab.  
-Falls sie nicht unterstützt wird, kann der Barcode manuell eingegeben werden.
