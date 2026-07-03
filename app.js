@@ -1,5 +1,6 @@
-const FOOD_KEY = "smart_fridge_v2_foods";
-const SHOPPING_KEY = "smart_fridge_v2_shopping";
+const FOOD_KEY = "smart_fridge_v21_foods";
+const SHOPPING_KEY = "smart_fridge_v21_shopping";
+const THEME_KEY = "smart_fridge_v21_theme";
 
 const zones = {
   A: { title: "Tür oben", hint: "Butter, Käse, Saucen, Eier", color: "#1463ff" },
@@ -101,10 +102,7 @@ function render() {
     day: "numeric"
   });
 
-  foods = foods.map(item => ({
-    ...item,
-    zone: item.zone || suggestZone(item.category, item.name)
-  }));
+  foods = foods.map(item => ({ ...item, zone: item.zone || suggestZone(item.category, item.name) }));
   save();
 
   const expiring = foods.filter(item => daysUntil(item.expiry) <= 3);
@@ -190,8 +188,13 @@ function renderZones() {
       zoneItems.className = "zone-items";
       zoneItems.innerHTML = foods
         .filter(item => item.zone === zone)
-        .slice(0, 5)
-        .map(item => `<span class="mini-item">${escapeHtml(item.name)}</span>`)
+        .slice(0, 7)
+        .map(item => `
+          <span class="mini-item">
+            ${item.imageUrl ? `<img src="${escapeHtml(item.imageUrl)}" alt="">` : iconFor(item.category)}
+            ${escapeHtml(item.name)}
+          </span>
+        `)
         .join("");
     }
   });
@@ -383,7 +386,7 @@ async function applyBarcode(barcode) {
 
 async function lookupOpenFoodFacts(barcode) {
   try {
-    const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}?fields=product_name,product_name_de,brands,categories_tags,categories,quantity,product_quantity,product_quantity_unit,image_front_small_url,image_front_url`;
+    const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}?fields=product_name,product_name_de,brands,categories_tags,categories,quantity,image_front_small_url,image_front_url`;
     const response = await fetch(url);
     const data = await response.json();
 
@@ -484,12 +487,14 @@ function scrollToSection(id) {
   setTimeout(() => target.classList.remove("section-highlight"), 800);
 }
 
-document.querySelectorAll(".nav, .quick-actions button").forEach(button => {
+document.querySelectorAll(".nav, .quick-actions button, .primary-scan, .ghost, .mobile-nav button").forEach(button => {
   button.addEventListener("click", () => scrollToSection(button.dataset.target));
 });
 
 document.getElementById("themeToggle").addEventListener("click", () => {
-  document.getElementById("app").classList.toggle("dark");
+  const app = document.getElementById("app");
+  app.classList.toggle("dark");
+  localStorage.setItem(THEME_KEY, app.classList.contains("dark") ? "dark" : "light");
 });
 
 function val(id) {
@@ -508,6 +513,10 @@ function escapeHtml(value) {
     '"': "&quot;",
     "'": "&#039;"
   }[char]));
+}
+
+if (localStorage.getItem(THEME_KEY) === "light") {
+  document.getElementById("app").classList.remove("dark");
 }
 
 render();

@@ -1,24 +1,23 @@
-# Smart Fridge Manager V2.0
+# Smart Fridge Manager V2.1
 
-Reine HTML-/CSS-/JavaScript-App für GitHub Pages.
+GitHub-Pages-Version mit modernem Dashboard.
 
-## Funktionen
+## Neu in V2.1
 
-- modernes Dashboard
-- interaktives Kühlschrank-Diagramm
-- Zonen A bis F
-- Kreisdiagramm Bestand nach Zonen
-- Barcode-Scan per Handy oder Eingabe
+- Scanner ist als Hauptfunktion hervorgehoben
+- verbesserte Kühlschrankgrafik
+- Lebensmittel erscheinen als Chips direkt in der Zone
+- Mobile-Navigation unten
+- besserer Dark Mode
+- klareres Dashboard
 - OpenFoodFacts-Anbindung
-- Produktbilder
+- Barcode-Scan per Handy oder Eingabe
+- Zonen A bis F
 - Bestand mit + / − und Entnehmen
-- Einkaufsliste
-- Rezeptvorschläge
-- GitHub-Pages-fähig
 
 ## GitHub Pages
 
-Diese Dateien ins Repository laden:
+Diese Dateien ins Repository laden oder ersetzen:
 
 - index.html
 - style.css
@@ -33,4 +32,4 @@ Danach GitHub → Settings → Pages:
 
 ## Hinweis
 
-Der Barcode-Scan über die Kamera hängt vom Browser ab. Die manuelle Barcode-Eingabe funktioniert immer.
+Kamera-Barcode-Erkennung hängt vom Browser ab. Die manuelle Barcode-Eingabe funktioniert immer.
